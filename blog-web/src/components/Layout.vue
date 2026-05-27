@@ -63,7 +63,7 @@ function handleLogout() {
   height: 100vh;
 }
 .admin-logo {
-  height: 64px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,7 +77,7 @@ function handleLogout() {
   justify-content: flex-end;
   border-bottom: 1px solid #dcdfe6;
   padding: 0 24px;
-  height: 56px;
+  height: 60px;
 }
 .header-right {
   display: flex;
