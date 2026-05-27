@@ -12,7 +12,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="Slug">
+            <el-form-item label="别名">
               <el-input v-model="form.slug" placeholder="url-slug" />
             </el-form-item>
           </el-col>

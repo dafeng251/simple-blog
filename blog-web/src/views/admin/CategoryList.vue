@@ -7,7 +7,7 @@
       </div>
       <el-table :data="categories" v-loading="loading">
         <el-table-column prop="name" label="名称" />
-        <el-table-column prop="slug" label="Slug" />
+        <el-table-column prop="slug" label="别名" />
         <el-table-column prop="description" label="描述" show-overflow-tooltip />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
@@ -23,7 +23,7 @@
         <el-form-item label="名称">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="Slug">
+        <el-form-item label="别名">
           <el-input v-model="form.slug" />
         </el-form-item>
         <el-form-item label="描述">
