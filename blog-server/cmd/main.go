@@ -1,0 +1,78 @@
+package main
+
+import (
+	"log"
+	"os"
+
+	"blog-server/config"
+	"blog-server/handler"
+	"blog-server/model"
+	"blog-server/router"
+	"blog-server/service"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+func main() {
+	cfg := config.Load()
+
+	// Ensure upload directory exists
+	os.MkdirAll(cfg.UploadDir, 0755)
+
+	// Database
+	db, err := gorm.Open(sqlite.Open(cfg.DBPath), &gorm.Config{})
+	if err != nil {
+		log.Fatal("failed to connect database:", err)
+	}
+
+	// Auto migrate
+	if err := db.AutoMigrate(
+		&model.User{},
+		&model.Category{},
+		&model.Tag{},
+		&model.Post{},
+		&model.PostTag{},
+		&model.Comment{},
+		&model.SiteConfig{},
+	); err != nil {
+		log.Fatal("failed to migrate database:", err)
+	}
+
+	// Seed default admin user if none exists
+	var count int64
+	db.Model(&model.User{}).Count(&count)
+	if count == 0 {
+		authSvc := service.NewAuthService(db, cfg.JWTSecret)
+		if err := authSvc.CreateUser("admin", "admin123", "admin"); err != nil {
+			log.Println("warning: failed to seed admin user:", err)
+		} else {
+			log.Println("created default admin user (admin / admin123)")
+		}
+	}
+
+	// Services
+	authSvc := service.NewAuthService(db, cfg.JWTSecret)
+	postSvc := service.NewPostService(db)
+	categorySvc := service.NewCategoryService(db)
+	tagSvc := service.NewTagService(db)
+	commentSvc := service.NewCommentService(db)
+	configSvc := service.NewConfigService(db)
+
+	// Handlers
+	authH := handler.NewAuthHandler(authSvc)
+	postH := handler.NewPostHandler(postSvc)
+	categoryH := handler.NewCategoryHandler(categorySvc)
+	tagH := handler.NewTagHandler(tagSvc)
+	commentH := handler.NewCommentHandler(commentSvc)
+	configH := handler.NewConfigHandler(configSvc)
+	uploadH := handler.NewUploadHandler(cfg)
+
+	// Router
+	r := router.Setup(cfg, authH, postH, categoryH, tagH, commentH, configH, uploadH)
+
+	log.Printf("server starting on :%s", cfg.Port)
+	if err := r.Run(":" + cfg.Port); err != nil {
+		log.Fatal("failed to start server:", err)
+	}
+}
