@@ -55,18 +55,6 @@ func main() {
 		log.Println("connected to redis")
 	}
 
-	// Seed default admin user if none exists
-	var count int64
-	db.Model(&model.User{}).Count(&count)
-	if count == 0 {
-		authSvc := service.NewAuthService(db, cfg.JWTSecret)
-		if err := authSvc.CreateUser("admin", "admin123", "admin"); err != nil {
-			log.Println("warning: failed to seed admin user:", err)
-		} else {
-			log.Println("created default admin user (admin / admin123)")
-		}
-	}
-
 	// Services
 	authSvc := service.NewAuthService(db, cfg.JWTSecret)
 	postSvc := service.NewPostService(db, rdb)

@@ -35,9 +35,10 @@ func Setup(
 	api.GET("/tags", tagH.List)
 	api.POST("/comments", commentH.Create)
 
-	// Admin routes
+	// Auth routes
 	admin := api.Group("/admin")
 	admin.POST("/login", authH.Login)
+	admin.POST("/register", authH.Register)
 
 	auth := admin.Group("")
 	auth.Use(middleware.JWTAuth(cfg.JWTSecret))

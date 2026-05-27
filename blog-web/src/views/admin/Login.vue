@@ -15,6 +15,9 @@
           </el-button>
         </el-form-item>
       </el-form>
+      <div class="switch-link">
+        没有账户？<router-link to="/admin/register">去注册</router-link>
+      </div>
     </el-card>
   </div>
 </template>
@@ -62,5 +65,9 @@ async function handleLogin() {
 .login-card h2 {
   text-align: center;
   margin-bottom: 1.5rem;
+}
+.switch-link {
+  text-align: center;
+  color: #999;
 }
 </style>

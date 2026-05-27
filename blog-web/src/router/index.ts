@@ -17,6 +17,7 @@ const router = createRouter({
     },
     // Admin routes
     { path: '/admin/login', name: 'Login', component: () => import('../views/admin/Login.vue') },
+    { path: '/admin/register', name: 'Register', component: () => import('../views/admin/Register.vue') },
     {
       path: '/admin',
       component: () => import('../components/Layout.vue'),

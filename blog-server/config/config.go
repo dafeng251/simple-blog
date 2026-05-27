@@ -15,7 +15,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		Port:      envOr("PORT", "8080"),
-		DBDSN:     envOr("DB_DSN", "root:root@tcp(127.0.0.1:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local"),
+		DBDSN:     envOr("DB_DSN", "root:123456@tcp(127.0.0.1:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local"),
 		JWTSecret: envOr("JWT_SECRET", "change-me-in-production"),
 		UploadDir: envOr("UPLOAD_DIR", "uploads"),
 		RedisAddr: envOr("REDIS_ADDR", "127.0.0.1:6379"),
