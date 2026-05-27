@@ -30,6 +30,7 @@ const router = createRouter({
         { path: 'tags', name: 'TagList', component: () => import('../views/admin/TagList.vue') },
         { path: 'comments', name: 'CommentList', component: () => import('../views/admin/CommentList.vue') },
         { path: 'config', name: 'SiteConfig', component: () => import('../views/admin/SiteConfig.vue') },
+        { path: 'files', name: 'FileList', component: () => import('../views/admin/FileList.vue') },
       ],
     },
   ],

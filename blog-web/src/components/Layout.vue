@@ -27,6 +27,10 @@
           <el-icon><Setting /></el-icon>
           <span>站点配置</span>
         </el-menu-item>
+        <el-menu-item index="/admin/files">
+          <el-icon><Folder /></el-icon>
+          <span>文件管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -47,7 +51,7 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { DataBoard, Document, FolderOpened, CollectionTag, ChatDotRound, Setting, View, SwitchButton } from '@element-plus/icons-vue'
+import { DataBoard, Document, FolderOpened, CollectionTag, ChatDotRound, Setting, View, SwitchButton, Folder } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -37,7 +37,8 @@ func main() {
 		&model.Post{},
 		&model.PostTag{},
 		&model.Comment{},
-		&model.SiteConfig{},
+		&model.SiteConfig{},model.SiteConfig{},
+		&model.File{},
 	); err != nil {
 		log.Fatal("failed to migrate database:", err)
 	}
@@ -62,6 +63,7 @@ func main() {
 	tagSvc := service.NewTagService(db)
 	commentSvc := service.NewCommentService(db)
 	configSvc := service.NewConfigService(db)
+	fileSvc := service.NewFileService(db)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
@@ -70,10 +72,11 @@ func main() {
 	tagH := handler.NewTagHandler(tagSvc)
 	commentH := handler.NewCommentHandler(commentSvc)
 	configH := handler.NewConfigHandler(configSvc)
-	uploadH := handler.NewUploadHandler(cfg)
+	fileH := handler.NewFileHandler(fileSvc, cfg.UploadDir)
+	uploadH := handler.NewUploadHandler(cfg, fileSvc)
 
 	// Router
-	r := router.Setup(cfg, authH, postH, categoryH, tagH, commentH, configH, uploadH)
+	r := router.Setup(cfg, authH, postH, categoryH, tagH, commentH, configH, uploadH, fileH)
 
 	log.Printf("server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

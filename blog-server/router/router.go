@@ -17,6 +17,7 @@ func Setup(
 	commentH *handler.CommentHandler,
 	configH *handler.ConfigHandler,
 	uploadH *handler.UploadHandler,
+	fileH *handler.FileHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -66,6 +67,9 @@ func Setup(
 		auth.PUT("/config", configH.Update)
 
 		auth.POST("/upload", uploadH.Upload)
+
+		auth.GET("/files", fileH.List)
+		auth.DELETE("/files/:id", fileH.Delete)
 	}
 
 	return r

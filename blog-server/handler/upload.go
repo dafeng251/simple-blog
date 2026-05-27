@@ -6,17 +6,20 @@ import (
 	"strings"
 
 	"blog-server/config"
+	"blog-server/model"
+	"blog-server/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UploadHandler struct {
-	cfg *config.Config
+	cfg     *config.Config
+	fileSvc *service.FileService
 }
 
-func NewUploadHandler(cfg *config.Config) *UploadHandler {
-	return &UploadHandler{cfg: cfg}
+func NewUploadHandler(cfg *config.Config, fileSvc *service.FileService) *UploadHandler {
+	return &UploadHandler{cfg: cfg, fileSvc: fileSvc}
 }
 
 func (h *UploadHandler) Upload(c *gin.Context) {
@@ -41,5 +44,21 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"url": "/uploads/" + filename})
+	url := "/uploads/" + filename
+	uid := getUserID(c)
+
+	// Save file record to DB
+	fileRecord := &model.File{
+		OriginalName: file.Filename,
+		FileName:     filename,
+		URL:          url,
+		Path:         dst,
+		Size:         file.Size,
+		Ext:          ext,
+		ContentType:  file.Header.Get("Content-Type"),
+	}
+	fileRecord.CreatedBy = uid
+	h.fileSvc.Create(fileRecord)
+
+	c.JSON(http.StatusOK, gin.H{"url": url})
 }
