@@ -16,7 +16,7 @@ func NewTagService(db *gorm.DB) *TagService {
 
 func (s *TagService) List() ([]model.Tag, error) {
 	var tags []model.Tag
-	err := s.db.Order("created_at DESC").Find(&tags).Error
+	err := s.db.Order("created_at ASC").Find(&tags).Error
 	return tags, err
 }
 

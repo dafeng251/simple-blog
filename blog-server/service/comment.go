@@ -31,7 +31,7 @@ func (s *CommentService) ListAll(page, pageSize int) ([]model.Comment, int64, er
 	offset := (page - 1) * pageSize
 	err := s.db.
 		Preload("Post").
-		Order("created_at DESC").
+		Order("created_at ASC").
 		Offset(offset).
 		Limit(pageSize).
 		Find(&comments).Error

@@ -16,7 +16,7 @@ func NewCategoryService(db *gorm.DB) *CategoryService {
 
 func (s *CategoryService) List() ([]model.Category, error) {
 	var categories []model.Category
-	err := s.db.Order("created_at DESC").Find(&categories).Error
+	err := s.db.Order("created_at ASC").Find(&categories).Error
 	return categories, err
 }
 
