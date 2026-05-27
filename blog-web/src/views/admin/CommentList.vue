@@ -1,31 +1,37 @@
 <template>
   <div class="comment-list">
-    <h2>评论管理</h2>
-    <el-table :data="comments" v-loading="loading">
-      <el-table-column prop="nickname" label="昵称" width="120" />
-      <el-table-column prop="content" label="内容" show-overflow-tooltip />
-      <el-table-column prop="post.title" label="所属文章" width="200" />
-      <el-table-column prop="status" label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="250">
-        <template #default="{ row }">
-          <template v-if="row.status === 'pending'">
-            <el-button size="small" type="success" @click="handleStatus(row.id, 'approved')"><el-icon><Check /></el-icon> 通过</el-button>
-            <el-button size="small" type="warning" @click="handleStatus(row.id, 'rejected')"><el-icon><Close /></el-icon> 拒绝</el-button>
+    <el-card shadow="never">
+      <div class="page-header">
+        <h2>评论管理</h2>
+      </div>
+      <el-table :data="comments" v-loading="loading">
+        <el-table-column prop="nickname" label="昵称" width="120" />
+        <el-table-column prop="content" label="内容" show-overflow-tooltip />
+        <el-table-column prop="post.title" label="所属文章" width="200" />
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag>
           </template>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <Pagination
-      :total="total"
-      :page-size="pageSize"
-      :current-page="page"
-      @page-change="handlePageChange"
-    />
+        </el-table-column>
+        <el-table-column label="操作" width="250">
+          <template #default="{ row }">
+            <template v-if="row.status === 'pending'">
+              <el-button size="small" type="success" @click="handleStatus(row.id, 'approved')"><el-icon><Check /></el-icon> 通过</el-button>
+              <el-button size="small" type="warning" @click="handleStatus(row.id, 'rejected')"><el-icon><Close /></el-icon> 拒绝</el-button>
+            </template>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-wrapper">
+        <Pagination
+          :total="total"
+          :page-size="pageSize"
+          :current-page="page"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -81,3 +87,20 @@ function statusLabel(s: string) {
 
 onMounted(fetchComments)
 </script>
+
+<style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
+}
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

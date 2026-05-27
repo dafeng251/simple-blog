@@ -1,22 +1,24 @@
 <template>
   <div class="tag-list">
-    <div class="header">
-      <h2>标签管理</h2>
-      <el-button type="primary" @click="showDialog()"><el-icon><Plus /></el-icon> 新建标签</el-button>
-    </div>
-    <el-table :data="tags" v-loading="loading">
-      <el-table-column prop="name" label="名称" />
-      <el-table-column prop="slug" label="Slug" />
-      <el-table-column label="操作" width="200">
-        <template #default="{ row }">
-          <el-button size="small" @click="showDialog(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card shadow="never">
+      <div class="page-header">
+        <h2>标签管理</h2>
+        <el-button type="primary" @click="showDialog()"><el-icon><Plus /></el-icon> 新建标签</el-button>
+      </div>
+      <el-table :data="tags" v-loading="loading">
+        <el-table-column prop="name" label="名称" />
+        <el-table-column prop="slug" label="Slug" />
+        <el-table-column label="操作" width="200">
+          <template #default="{ row }">
+            <el-button size="small" @click="showDialog(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑标签' : '新建标签'">
-      <el-form :model="form">
+    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑标签' : '新建标签'" width="500px">
+      <el-form :model="form" label-width="60px">
         <el-form-item label="名称">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -91,10 +93,13 @@ onMounted(fetchTags)
 </script>
 
 <style scoped>
-.header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
 }
 </style>

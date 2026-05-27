@@ -1,37 +1,55 @@
 <template>
   <div class="post-edit">
-    <h2>{{ isEdit ? '编辑文章' : '新建文章' }}</h2>
-    <el-form :model="form" label-width="80px">
-      <el-form-item label="标题">
-        <el-input v-model="form.title" />
-      </el-form-item>
-      <el-form-item label="Slug">
-        <el-input v-model="form.slug" />
-      </el-form-item>
-      <el-form-item label="分类">
-        <el-select v-model="form.category_id" placeholder="选择分类">
-          <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="标签">
-        <el-select v-model="form.tag_ids" multiple placeholder="选择标签">
-          <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="摘要">
-        <el-input v-model="form.summary" type="textarea" :rows="2" />
-      </el-form-item>
-      <el-form-item label="封面图">
-        <el-input v-model="form.cover_image" placeholder="图片URL" />
-      </el-form-item>
-      <el-form-item label="内容">
-        <MdEditor v-model="form.content" style="height: 500px" />
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="handleSave('draft')">保存草稿</el-button>
-        <el-button type="primary" @click="handleSave('published')">发布</el-button>
-      </el-form-item>
-    </el-form>
+    <el-card shadow="never">
+      <div class="page-header">
+        <h2>{{ isEdit ? '编辑文章' : '新建文章' }}</h2>
+      </div>
+      <el-form :model="form" label-width="80px">
+        <el-row :gutter="20">
+          <el-col :span="16">
+            <el-form-item label="标题">
+              <el-input v-model="form.title" placeholder="请输入文章标题" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="Slug">
+              <el-input v-model="form.slug" placeholder="url-slug" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="分类">
+              <el-select v-model="form.category_id" placeholder="选择分类" style="width: 100%">
+                <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="标签">
+              <el-select v-model="form.tag_ids" multiple placeholder="选择标签" style="width: 100%">
+                <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="封面图">
+              <el-input v-model="form.cover_image" placeholder="图片URL" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="摘要">
+          <el-input v-model="form.summary" type="textarea" :rows="3" placeholder="文章摘要，用于列表页展示" />
+        </el-form-item>
+        <el-form-item label="内容">
+          <MdEditor v-model="form.content" style="height: 480px; width: 100%" />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="handleSave('draft')">保存草稿</el-button>
+          <el-button type="primary" @click="handleSave('published')">发布</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
@@ -104,7 +122,10 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.post-edit {
-  max-width: 900px;
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
 }
 </style>

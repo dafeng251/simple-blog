@@ -1,41 +1,45 @@
 <template>
   <div class="post-list">
-    <div class="header">
-      <h2>文章管理</h2>
-      <el-button type="primary" @click="$router.push('/admin/posts/edit')">
-        <el-icon><Plus /></el-icon> 新建文章
-      </el-button>
-    </div>
-    <el-table :data="posts" v-loading="loading">
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="status" label="状态">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 'published' ? 'success' : 'info'">
-            {{ row.status === 'published' ? '已发布' : '草稿' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="category.name" label="分类" />
-      <el-table-column prop="created_at" label="创建时间">
-        <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
-      </el-table-column>
-      <el-table-column label="操作" width="200">
-        <template #default="{ row }">
-          <el-button size="small" @click="$router.push(`/admin/posts/edit/${row.id}`)">
-            <el-icon><Edit /></el-icon> 编辑
-          </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)">
-            <el-icon><Delete /></el-icon> 删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <Pagination
-      :total="total"
-      :page-size="pageSize"
-      :current-page="page"
-      @page-change="handlePageChange"
-    />
+    <el-card shadow="never">
+      <div class="page-header">
+        <h2>文章管理</h2>
+        <el-button type="primary" @click="$router.push('/admin/posts/edit')">
+          <el-icon><Plus /></el-icon> 新建文章
+        </el-button>
+      </div>
+      <el-table :data="posts" v-loading="loading">
+        <el-table-column prop="title" label="标题" />
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'published' ? 'success' : 'info'">
+              {{ row.status === 'published' ? '已发布' : '草稿' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="category.name" label="分类" width="120" />
+        <el-table-column prop="created_at" label="创建时间" width="140">
+          <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="200">
+          <template #default="{ row }">
+            <el-button size="small" @click="$router.push(`/admin/posts/edit/${row.id}`)">
+              <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)">
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-wrapper">
+        <Pagination
+          :total="total"
+          :page-size="pageSize"
+          :current-page="page"
+          @page-change="handlePageChange"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -83,10 +87,18 @@ onMounted(fetchPosts)
 </script>
 
 <style scoped>
-.header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
+}
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

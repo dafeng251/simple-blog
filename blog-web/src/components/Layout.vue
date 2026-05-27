@@ -1,6 +1,6 @@
 <template>
   <el-container class="admin-layout">
-    <el-aside width="200px">
+    <el-aside width="220px">
       <div class="admin-logo">极简博客</div>
       <el-menu :default-active="route.path" router>
         <el-menu-item index="/admin">
@@ -37,7 +37,9 @@
         </div>
       </el-header>
       <el-main>
-        <router-view />
+        <div class="page-container">
+          <router-view />
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -61,7 +63,7 @@ function handleLogout() {
   height: 100vh;
 }
 .admin-logo {
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,10 +76,19 @@ function handleLogout() {
   align-items: center;
   justify-content: flex-end;
   border-bottom: 1px solid #dcdfe6;
+  padding: 0 24px;
+  height: 56px;
 }
 .header-right {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
+}
+.el-main {
+  padding: 0;
+  background: #f5f7fa;
+}
+.page-container {
+  padding: 28px 32px;
 }
 </style>
