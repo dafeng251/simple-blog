@@ -3,13 +3,37 @@
     <el-card shadow="never">
       <div class="page-header">
         <h2>分类管理</h2>
-        <el-button type="primary" @click="showDialog()"><el-icon><Plus /></el-icon> 新建分类</el-button>
+        <div class="page-actions">
+          <el-popover placement="bottom-end" :width="200" trigger="click">
+            <template #reference>
+              <el-button><el-icon><Setting /></el-icon> 列设置</el-button>
+            </template>
+            <el-checkbox-group v-model="visibleColumns" @change="saveColumns">
+              <el-checkbox v-for="col in allColumns" :key="col.prop" :label="col.prop" :value="col.prop">
+                {{ col.label }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-popover>
+          <el-button type="primary" @click="showDialog()"><el-icon><Plus /></el-icon> 新建分类</el-button>
+        </div>
       </div>
       <el-table :data="categories" v-loading="loading">
-        <el-table-column prop="name" label="名称" />
-        <el-table-column prop="slug" label="别名" />
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column label="操作" width="200">
+        <el-table-column v-if="show('id')" prop="id" label="ID" width="60" />
+        <el-table-column v-if="show('name')" prop="name" label="名称" width="150" />
+        <el-table-column v-if="show('slug')" prop="slug" label="别名" width="150" />
+        <el-table-column v-if="show('description')" prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column v-if="show('created_at')" label="创建时间" width="140">
+          <template #default="{ row }">{{ formatDate(row.created_at) }}</template>
+        </el-table-column>
+        <el-table-column v-if="show('created_by')" prop="created_by" label="创建人" width="80" />
+        <el-table-column v-if="show('updated_at')" label="更新时间" width="140">
+          <template #default="{ row }">{{ formatDate(row.updated_at) }}</template>
+        </el-table-column>
+        <el-table-column v-if="show('updated_by')" prop="updated_by" label="更新人" width="80" />
+        <el-table-column v-if="show('deleted_at')" label="删除时间" width="140">
+          <template #default="{ row }">{{ row.deleted_at ? formatDate(row.deleted_at) : '-' }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="showDialog(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
@@ -40,7 +64,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Setting } from '@element-plus/icons-vue'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../api/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -49,6 +73,27 @@ const loading = ref(true)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({ name: '', slug: '', description: '' })
+
+const allColumns = [
+  { prop: 'id', label: 'ID' },
+  { prop: 'name', label: '名称' },
+  { prop: 'slug', label: '别名' },
+  { prop: 'description', label: '描述' },
+  { prop: 'created_at', label: '创建时间' },
+  { prop: 'created_by', label: '创建人' },
+  { prop: 'updated_at', label: '更新时间' },
+  { prop: 'updated_by', label: '更新人' },
+  { prop: 'deleted_at', label: '删除时间' },
+]
+const defaultVisible = ['name', 'slug', 'description', 'created_at']
+const visibleColumns = ref<string[]>(JSON.parse(localStorage.getItem('category_columns') || 'null') || defaultVisible)
+
+function show(prop: string) {
+  return visibleColumns.value.includes(prop)
+}
+function saveColumns() {
+  localStorage.setItem('category_columns', JSON.stringify(visibleColumns.value))
+}
 
 async function fetchCategories() {
   loading.value = true
@@ -93,6 +138,10 @@ async function handleDelete(id: number) {
   fetchCategories()
 }
 
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('zh-CN')
+}
+
 onMounted(fetchCategories)
 </script>
 
@@ -105,5 +154,9 @@ onMounted(fetchCategories)
 }
 .page-header h2 {
   margin: 0;
+}
+.page-actions {
+  display: flex;
+  gap: 10px;
 }
 </style>
