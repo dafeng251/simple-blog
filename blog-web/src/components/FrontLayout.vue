@@ -1,7 +1,7 @@
 <template>
   <div class="front-layout">
     <header class="front-header">
-      <router-link to="/" class="logo">My Blog</router-link>
+      <router-link to="/" class="logo">极简博客</router-link>
       <nav>
         <router-link to="/">首页</router-link>
         <router-link to="/about">关于</router-link>
@@ -12,7 +12,7 @@
       <router-view />
     </main>
     <footer class="front-footer">
-      <p>&copy; 2026 My Blog</p>
+      <p>&copy; 2026 极简博客</p>
     </footer>
   </div>
 </template>

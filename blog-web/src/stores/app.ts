@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useAppStore = defineStore('app', () => {
-  const siteTitle = ref('My Blog')
+  const siteTitle = ref('极简博客')
   const sidebarCollapsed = ref(false)
 
   function toggleSidebar() {

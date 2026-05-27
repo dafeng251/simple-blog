@@ -1,7 +1,7 @@
 <template>
   <el-container class="admin-layout">
     <el-aside width="200px">
-      <div class="admin-logo">管理后台</div>
+      <div class="admin-logo">极简博客</div>
       <el-menu :default-active="route.path" router>
         <el-menu-item index="/admin">
           <span>仪表盘</span>
