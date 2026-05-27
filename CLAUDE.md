@@ -39,7 +39,8 @@ Once the project is scaffolded:
 ```bash
 # Backend
 cd blog-server
-go run ./cmd/main.go       # start dev server
+air                         # dev server with hot reload
+go run ./cmd/main.go        # start dev server (no hot reload)
 go build -o server ./cmd    # build binary
 
 # Frontend
