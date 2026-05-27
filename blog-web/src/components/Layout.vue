@@ -1,7 +1,7 @@
 <template>
   <el-container class="admin-layout">
     <el-aside width="220px">
-      <div class="admin-logo">极简博客</div>
+      <div class="admin-logo">{{ appStore.siteTitle || '极简博客' }}</div>
       <el-menu :default-active="route.path" router>
         <el-menu-item index="/admin">
           <el-icon><DataBoard /></el-icon>
@@ -52,9 +52,13 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { DataBoard, Document, FolderOpened, CollectionTag, ChatDotRound, Setting, View, SwitchButton, Folder } from '@element-plus/icons-vue'
+import { useAppStore } from '../stores/app'
 
 const route = useRoute()
 const router = useRouter()
+const appStore = useAppStore()
+
+appStore.loadConfig()
 
 function handleLogout() {
   localStorage.removeItem('token')

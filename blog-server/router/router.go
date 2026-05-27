@@ -35,6 +35,7 @@ func Setup(
 	api.GET("/categories", categoryH.List)
 	api.GET("/tags", tagH.List)
 	api.POST("/comments", commentH.Create)
+	api.GET("/config", configH.GetAll)
 
 	// Auth routes
 	admin := api.Group("/admin")
@@ -65,6 +66,7 @@ func Setup(
 
 		auth.GET("/config", configH.GetAll)
 		auth.PUT("/config", configH.Update)
+			auth.PUT("/config/batch", configH.BatchUpdate)
 
 		auth.POST("/upload", uploadH.Upload)
 

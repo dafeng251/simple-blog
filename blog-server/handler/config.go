@@ -44,3 +44,24 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "updated"})
 }
+
+type BatchUpdateConfigRequest struct {
+	Configs []UpdateConfigRequest `json:"configs" binding:"required"`
+}
+
+func (h *ConfigHandler) BatchUpdate(c *gin.Context) {
+	var req BatchUpdateConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uid := getUserID(c)
+	for _, item := range req.Configs {
+		if err := h.configSvc.Set(item.Key, item.Value, uid); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "updated"})
+}
