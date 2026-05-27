@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
+	"strconv"
 
 	"blog-server/config"
 	"blog-server/handler"
@@ -10,7 +12,8 @@ import (
 	"blog-server/router"
 	"blog-server/service"
 
-	"gorm.io/driver/sqlite"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -20,8 +23,8 @@ func main() {
 	// Ensure upload directory exists
 	os.MkdirAll(cfg.UploadDir, 0755)
 
-	// Database
-	db, err := gorm.Open(sqlite.Open(cfg.DBPath), &gorm.Config{})
+	// MySQL
+	db, err := gorm.Open(mysql.Open(cfg.DBDSN), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database:", err)
 	}
@@ -39,6 +42,19 @@ func main() {
 		log.Fatal("failed to migrate database:", err)
 	}
 
+	// Redis
+	redisDB, _ := strconv.Atoi(cfg.RedisDB)
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddr,
+		Password: cfg.RedisPwd,
+		DB:       redisDB,
+	})
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		log.Println("warning: redis not available:", err)
+	} else {
+		log.Println("connected to redis")
+	}
+
 	// Seed default admin user if none exists
 	var count int64
 	db.Model(&model.User{}).Count(&count)
@@ -53,7 +69,7 @@ func main() {
 
 	// Services
 	authSvc := service.NewAuthService(db, cfg.JWTSecret)
-	postSvc := service.NewPostService(db)
+	postSvc := service.NewPostService(db, rdb)
 	categorySvc := service.NewCategoryService(db)
 	tagSvc := service.NewTagService(db)
 	commentSvc := service.NewCommentService(db)

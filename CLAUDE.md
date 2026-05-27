@@ -10,9 +10,9 @@ Personal blog system (个人博客系统) — a fullstack project with a Go back
 
 Two independent sub-projects sharing a single deployment:
 
-- **`blog-server/`** — Go REST API (Gin + GORM + SQLite). Layered: `handler → service → model`, with middleware for JWT auth, CORS, and logging. Entry point: `cmd/main.go`.
+- **`blog-server/`** — Go REST API (Gin + GORM + MySQL). Layered: `handler → service → model`, with middleware for JWT auth, CORS, and logging. Entry point: `cmd/main.go`.
 - **`blog-web/`** — Vue 3 SPA (Vite + TypeScript + Element Plus). Public blog pages + admin dashboard. Communicates with backend via Axios over `/api`.
-- **Database** — SQLite by default (upgradable to MySQL). Key tables: `users`, `categories`, `tags`, `posts`, `post_tags`, `comments`, `site_config`.
+- **Database** — MySQL + Redis. Key tables: `users`, `categories`, `tags`, `posts`, `post_tags`, `comments`, `site_config`. Redis used for post detail cache.
 - **Deployment** — Docker + Caddy reverse proxy (auto HTTPS). Caddy serves frontend static files and proxies `/api` to the Go backend.
 
 ## API Surface
@@ -27,7 +27,7 @@ Two independent sub-projects sharing a single deployment:
 |---|---|---|
 | Language | Go | TypeScript |
 | Framework | Gin | Vue 3 + Vite 6 |
-| ORM / State | GORM (SQLite) | Pinia |
+| ORM / Cache | GORM (MySQL) + Redis | Pinia |
 | Auth | golang-jwt/jwt/v5 | localStorage token |
 | UI | — | Element Plus |
 | Markdown | — | md-editor-v3 |

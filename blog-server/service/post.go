@@ -1,17 +1,24 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
 	"blog-server/model"
 
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type PostService struct {
-	db *gorm.DB
+	db  *gorm.DB
+	rdb *redis.Client
 }
 
-func NewPostService(db *gorm.DB) *PostService {
-	return &PostService{db: db}
+func NewPostService(db *gorm.DB, rdb *redis.Client) *PostService {
+	return &PostService{db: db, rdb: rdb}
 }
 
 type ListPostsParams struct {
@@ -53,6 +60,19 @@ func (s *PostService) List(params ListPostsParams) ([]model.Post, int64, error) 
 }
 
 func (s *PostService) GetBySlug(slug string) (*model.Post, error) {
+	ctx := context.Background()
+	cacheKey := fmt.Sprintf("post:slug:%s", slug)
+
+	// Try cache first
+	if s.rdb != nil {
+		if cached, err := s.rdb.Get(ctx, cacheKey).Result(); err == nil {
+			var post model.Post
+			if json.Unmarshal([]byte(cached), &post) == nil {
+				return &post, nil
+			}
+		}
+	}
+
 	var post model.Post
 	err := s.db.
 		Preload("Category").
@@ -60,7 +80,18 @@ func (s *PostService) GetBySlug(slug string) (*model.Post, error) {
 		Preload("Author").
 		Where("slug = ?", slug).
 		First(&post).Error
-	return &post, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache for 5 minutes
+	if s.rdb != nil {
+		if data, err := json.Marshal(post); err == nil {
+			s.rdb.Set(ctx, cacheKey, data, 5*time.Minute)
+		}
+	}
+
+	return &post, nil
 }
 
 func (s *PostService) GetByID(id uint) (*model.Post, error) {
@@ -78,6 +109,11 @@ func (s *PostService) Create(post *model.Post) error {
 }
 
 func (s *PostService) Update(post *model.Post) error {
+	// Invalidate cache
+	if s.rdb != nil {
+		ctx := context.Background()
+		s.rdb.Del(ctx, fmt.Sprintf("post:slug:%s", post.Slug))
+	}
 	return s.db.Save(post).Error
 }
 
@@ -90,5 +126,12 @@ func (s *PostService) UpdateTags(post *model.Post, tagIDs []uint) error {
 }
 
 func (s *PostService) Delete(id uint) error {
+	// Get slug for cache invalidation
+	var post model.Post
+	s.db.Select("slug").First(&post, id)
+	if s.rdb != nil {
+		ctx := context.Background()
+		s.rdb.Del(ctx, fmt.Sprintf("post:slug:%s", post.Slug))
+	}
 	return s.db.Delete(&model.Post{}, id).Error
 }
