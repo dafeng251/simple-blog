@@ -18,7 +18,7 @@
         <el-input v-model="form.social_links" type="textarea" :rows="3" placeholder="JSON格式" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSave">保存</el-button>
+        <el-button type="primary" @click="handleSave"><el-icon><Check /></el-icon> 保存</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Check } from '@element-plus/icons-vue'
 import { getSiteConfig, updateSiteConfig } from '../../api/config'
 import { ElMessage } from 'element-plus'
 

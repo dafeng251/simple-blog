@@ -13,10 +13,10 @@
       <el-table-column label="操作" width="250">
         <template #default="{ row }">
           <template v-if="row.status === 'pending'">
-            <el-button size="small" type="success" @click="handleStatus(row.id, 'approved')">通过</el-button>
-            <el-button size="small" type="warning" @click="handleStatus(row.id, 'rejected')">拒绝</el-button>
+            <el-button size="small" type="success" @click="handleStatus(row.id, 'approved')"><el-icon><Check /></el-icon> 通过</el-button>
+            <el-button size="small" type="warning" @click="handleStatus(row.id, 'rejected')"><el-icon><Close /></el-icon> 拒绝</el-button>
           </template>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Check, Close, Delete } from '@element-plus/icons-vue'
 import { getAdminComments, updateCommentStatus, deleteComment } from '../../api/comment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '../../components/Pagination.vue'

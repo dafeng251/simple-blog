@@ -2,7 +2,7 @@
   <div class="category-list">
     <div class="header">
       <h2>分类管理</h2>
-      <el-button type="primary" @click="showDialog()">新建分类</el-button>
+      <el-button type="primary" @click="showDialog()"><el-icon><Plus /></el-icon> 新建分类</el-button>
     </div>
     <el-table :data="categories" v-loading="loading">
       <el-table-column prop="name" label="名称" />
@@ -10,8 +10,8 @@
       <el-table-column prop="description" label="描述" />
       <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button size="small" @click="showDialog(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+          <el-button size="small" @click="showDialog(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -38,6 +38,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../api/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
 

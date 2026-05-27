@@ -4,19 +4,19 @@
     <el-row :gutter="20">
       <el-col :span="8">
         <el-card>
-          <template #header>文章总数</template>
+          <template #header><el-icon><Document /></el-icon> 文章总数</template>
           <div class="stat">{{ stats.posts }}</div>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card>
-          <template #header>评论总数</template>
+          <template #header><el-icon><ChatDotRound /></el-icon> 评论总数</template>
           <div class="stat">{{ stats.comments }}</div>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card>
-          <template #header>分类总数</template>
+          <template #header><el-icon><FolderOpened /></el-icon> 分类总数</template>
           <div class="stat">{{ stats.categories }}</div>
         </el-card>
       </el-col>
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Document, ChatDotRound, FolderOpened } from '@element-plus/icons-vue'
 import { getAdminPosts } from '../../api/post'
 import { getAdminComments } from '../../api/comment'
 import { getCategories } from '../../api/category'

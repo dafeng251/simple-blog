@@ -1,25 +1,25 @@
 <template>
   <div class="login-page">
     <el-card class="login-card">
-      <h2>注册账户</h2>
+      <h2><el-icon><UserFilled /></el-icon> 注册账户</h2>
       <el-form @submit.prevent="handleRegister">
         <el-form-item>
-          <el-input v-model="form.username" placeholder="用户名（至少3位）" />
+          <el-input v-model="form.username" placeholder="用户名（至少3位）" :prefix-icon="User" />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="form.password" type="password" placeholder="密码（至少6位）" />
+          <el-input v-model="form.password" type="password" placeholder="密码（至少6位）" :prefix-icon="Lock" />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="form.confirmPassword" type="password" placeholder="确认密码" />
+          <el-input v-model="form.confirmPassword" type="password" placeholder="确认密码" :prefix-icon="Lock" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleRegister" :loading="loading" style="width: 100%">
-            注册
+            <el-icon><CirclePlus /></el-icon> 注册
           </el-button>
         </el-form-item>
       </el-form>
       <div class="switch-link">
-        已有账户？<router-link to="/admin/login">去登录</router-link>
+        已有账户？<router-link to="/admin/login"><el-icon><Right /></el-icon> 去登录</router-link>
       </div>
     </el-card>
   </div>
@@ -30,6 +30,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../../api/auth'
 import { ElMessage } from 'element-plus'
+import { UserFilled, User, Lock, CirclePlus, Right } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const loading = ref(false)

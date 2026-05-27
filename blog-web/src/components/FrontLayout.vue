@@ -1,11 +1,13 @@
 <template>
   <div class="front-layout">
     <header class="front-header">
-      <router-link to="/" class="logo">极简博客</router-link>
+      <router-link to="/" class="logo">
+        <el-icon><Edit /></el-icon> 极简博客
+      </router-link>
       <nav>
-        <router-link to="/">首页</router-link>
-        <router-link to="/about">关于</router-link>
-        <router-link to="/admin">管理</router-link>
+        <router-link to="/"><el-icon><House /></el-icon> 首页</router-link>
+        <router-link to="/about"><el-icon><InfoFilled /></el-icon> 关于</router-link>
+        <router-link to="/admin"><el-icon><Setting /></el-icon> 管理</router-link>
       </nav>
     </header>
     <main class="front-main">
@@ -16,6 +18,10 @@
     </footer>
   </div>
 </template>
+
+<script setup lang="ts">
+import { Edit, House, InfoFilled, Setting } from '@element-plus/icons-vue'
+</script>
 
 <style scoped>
 .front-layout {

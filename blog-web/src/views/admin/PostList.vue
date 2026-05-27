@@ -2,7 +2,9 @@
   <div class="post-list">
     <div class="header">
       <h2>文章管理</h2>
-      <el-button type="primary" @click="$router.push('/admin/posts/edit')">新建文章</el-button>
+      <el-button type="primary" @click="$router.push('/admin/posts/edit')">
+        <el-icon><Plus /></el-icon> 新建文章
+      </el-button>
     </div>
     <el-table :data="posts" v-loading="loading">
       <el-table-column prop="title" label="标题" />
@@ -19,8 +21,12 @@
       </el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button size="small" @click="$router.push(`/admin/posts/edit/${row.id}`)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+          <el-button size="small" @click="$router.push(`/admin/posts/edit/${row.id}`)">
+            <el-icon><Edit /></el-icon> 编辑
+          </el-button>
+          <el-button size="small" type="danger" @click="handleDelete(row.id)">
+            <el-icon><Delete /></el-icon> 删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -35,6 +41,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getAdminPosts, deletePost } from '../../api/post'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '../../components/Pagination.vue'
