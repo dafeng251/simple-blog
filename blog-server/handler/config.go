@@ -37,7 +37,8 @@ func (h *ConfigHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.configSvc.Set(req.Key, req.Value); err != nil {
+	uid := getUserID(c)
+	if err := h.configSvc.Set(req.Key, req.Value, uid); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -20,9 +20,9 @@ func (s *CategoryService) List() ([]model.Category, error) {
 	return categories, err
 }
 
-func (s *CategoryService) GetBySlug(slug string) (*model.Category, error) {
+func (s *CategoryService) GetByID(id uint) (*model.Category, error) {
 	var cat model.Category
-	err := s.db.Where("slug = ?", slug).First(&cat).Error
+	err := s.db.First(&cat, id).Error
 	return &cat, err
 }
 
@@ -31,9 +31,10 @@ func (s *CategoryService) Create(cat *model.Category) error {
 }
 
 func (s *CategoryService) Update(cat *model.Category) error {
-	return s.db.Save(cat).Error
+	return s.db.Model(&model.Category{}).Where("id = ?", cat.ID).Updates(cat).Error
 }
 
-func (s *CategoryService) Delete(id uint) error {
-	return s.db.Delete(&model.Category{}, id).Error
+func (s *CategoryService) Delete(id uint, deletedBy uint) error {
+	return s.db.Model(&model.Category{}).Where("id = ?", id).
+		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
 }

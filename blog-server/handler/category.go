@@ -40,11 +40,13 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		return
 	}
 
+	uid := getUserID(c)
 	cat := &model.Category{
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: req.Description,
 	}
+	cat.CreatedBy = uid
 
 	if err := h.categorySvc.Create(cat); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -62,12 +64,14 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		return
 	}
 
+	uid := getUserID(c)
 	cat := &model.Category{
-		ID:          uint(id),
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: req.Description,
 	}
+	cat.ID = uint(id)
+	cat.UpdatedBy = uid
 
 	if err := h.categorySvc.Update(cat); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -78,7 +82,8 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 
 func (h *CategoryHandler) Delete(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err := h.categorySvc.Delete(uint(id)); err != nil {
+	uid := getUserID(c)
+	if err := h.categorySvc.Delete(uint(id), uid); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

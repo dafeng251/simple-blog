@@ -63,7 +63,6 @@ func (s *PostService) GetBySlug(slug string) (*model.Post, error) {
 	ctx := context.Background()
 	cacheKey := fmt.Sprintf("post:slug:%s", slug)
 
-	// Try cache first
 	if s.rdb != nil {
 		if cached, err := s.rdb.Get(ctx, cacheKey).Result(); err == nil {
 			var post model.Post
@@ -84,7 +83,6 @@ func (s *PostService) GetBySlug(slug string) (*model.Post, error) {
 		return nil, err
 	}
 
-	// Cache for 5 minutes
 	if s.rdb != nil {
 		if data, err := json.Marshal(post); err == nil {
 			s.rdb.Set(ctx, cacheKey, data, 5*time.Minute)
@@ -109,12 +107,11 @@ func (s *PostService) Create(post *model.Post) error {
 }
 
 func (s *PostService) Update(post *model.Post) error {
-	// Invalidate cache
 	if s.rdb != nil {
 		ctx := context.Background()
 		s.rdb.Del(ctx, fmt.Sprintf("post:slug:%s", post.Slug))
 	}
-	return s.db.Save(post).Error
+	return s.db.Model(&model.Post{}).Where("id = ?", post.ID).Updates(post).Error
 }
 
 func (s *PostService) UpdateTags(post *model.Post, tagIDs []uint) error {
@@ -125,13 +122,13 @@ func (s *PostService) UpdateTags(post *model.Post, tagIDs []uint) error {
 	return s.db.Model(post).Association("Tags").Replace(tags)
 }
 
-func (s *PostService) Delete(id uint) error {
-	// Get slug for cache invalidation
+func (s *PostService) Delete(id uint, deletedBy uint) error {
 	var post model.Post
 	s.db.Select("slug").First(&post, id)
 	if s.rdb != nil {
 		ctx := context.Background()
 		s.rdb.Del(ctx, fmt.Sprintf("post:slug:%s", post.Slug))
 	}
-	return s.db.Delete(&model.Post{}, id).Error
+	return s.db.Model(&model.Post{}).Where("id = ?", id).
+		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
 }

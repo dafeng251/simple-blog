@@ -29,13 +29,16 @@ func (s *ConfigService) GetByKey(key string) (string, error) {
 	return config.Value, nil
 }
 
-func (s *ConfigService) Set(key, value string) error {
+func (s *ConfigService) Set(key, value string, updatedBy uint) error {
 	var config model.SiteConfig
 	result := s.db.Where("key = ?", key).First(&config)
 	if result.Error == gorm.ErrRecordNotFound {
 		config = model.SiteConfig{Key: key, Value: value}
+		config.CreatedBy = updatedBy
 		return s.db.Create(&config).Error
 	}
 	config.Value = value
-	return s.db.Save(&config).Error
+	config.UpdatedBy = updatedBy
+	return s.db.Model(&model.SiteConfig{}).Where("id = ?", config.ID).
+		Updates(map[string]interface{}{"value": value, "updated_by": updatedBy}).Error
 }

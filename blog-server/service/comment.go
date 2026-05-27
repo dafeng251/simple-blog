@@ -43,10 +43,12 @@ func (s *CommentService) Create(comment *model.Comment) error {
 	return s.db.Create(comment).Error
 }
 
-func (s *CommentService) UpdateStatus(id uint, status string) error {
-	return s.db.Model(&model.Comment{}).Where("id = ?", id).Update("status", status).Error
+func (s *CommentService) UpdateStatus(id uint, status string, updatedBy uint) error {
+	return s.db.Model(&model.Comment{}).Where("id = ?", id).
+		Updates(map[string]interface{}{"status": status, "updated_by": updatedBy}).Error
 }
 
-func (s *CommentService) Delete(id uint) error {
-	return s.db.Delete(&model.Comment{}, id).Error
+func (s *CommentService) Delete(id uint, deletedBy uint) error {
+	return s.db.Model(&model.Comment{}).Where("id = ?", id).
+		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
 }

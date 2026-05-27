@@ -19,7 +19,6 @@ func NewPostHandler(postSvc *service.PostService) *PostHandler {
 	return &PostHandler{postSvc: postSvc}
 }
 
-// Public: list published posts
 func (h *PostHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
@@ -37,11 +36,9 @@ func (h *PostHandler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"data": posts, "total": total, "page": page, "page_size": pageSize})
 }
 
-// Public: get post by slug
 func (h *PostHandler) GetBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	post, err := h.postSvc.GetBySlug(slug)
@@ -52,7 +49,6 @@ func (h *PostHandler) GetBySlug(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": post})
 }
 
-// Admin: list all posts (including drafts)
 func (h *PostHandler) AdminList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
@@ -65,7 +61,6 @@ func (h *PostHandler) AdminList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"data": posts, "total": total, "page": page, "page_size": pageSize})
 }
 
@@ -87,7 +82,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 		return
 	}
 
-	userID, _ := c.Get("user_id")
+	uid := getUserID(c)
 	status := req.Status
 	if status == "" {
 		status = "draft"
@@ -101,8 +96,9 @@ func (h *PostHandler) Create(c *gin.Context) {
 		CoverImage: req.CoverImage,
 		Status:     status,
 		CategoryID: req.CategoryID,
-		AuthorID:   uint(userID.(float64)),
+		AuthorID:   uid,
 	}
+	post.CreatedBy = uid
 
 	if status == "published" {
 		now := time.Now()
@@ -123,11 +119,6 @@ func (h *PostHandler) Create(c *gin.Context) {
 
 func (h *PostHandler) Update(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	post, err := h.postSvc.GetByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
-		return
-	}
 
 	var req CreatePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -135,19 +126,24 @@ func (h *PostHandler) Update(c *gin.Context) {
 		return
 	}
 
+	uid := getUserID(c)
+
+	post := &model.Post{}
+	post.ID = uint(id)
 	post.Title = req.Title
 	post.Slug = req.Slug
 	post.Content = req.Content
 	post.Summary = req.Summary
 	post.CoverImage = req.CoverImage
 	post.CategoryID = req.CategoryID
+	post.UpdatedBy = uid
 
-	if req.Status == "published" && post.Status != "published" {
-		now := time.Now()
-		post.PublishedAt = &now
-	}
 	if req.Status != "" {
 		post.Status = req.Status
+		if req.Status == "published" {
+			now := time.Now()
+			post.PublishedAt = &now
+		}
 	}
 
 	if err := h.postSvc.Update(post); err != nil {
@@ -156,7 +152,9 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 
 	if req.TagIDs != nil {
-		h.postSvc.UpdateTags(post, req.TagIDs)
+		p := &model.Post{}
+		p.ID = uint(id)
+		h.postSvc.UpdateTags(p, req.TagIDs)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": post})
@@ -164,7 +162,8 @@ func (h *PostHandler) Update(c *gin.Context) {
 
 func (h *PostHandler) Delete(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err := h.postSvc.Delete(uint(id)); err != nil {
+	uid := getUserID(c)
+	if err := h.postSvc.Delete(uint(id), uid); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

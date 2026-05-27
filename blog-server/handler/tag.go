@@ -39,7 +39,10 @@ func (h *TagHandler) Create(c *gin.Context) {
 		return
 	}
 
+	uid := getUserID(c)
 	tag := &model.Tag{Name: req.Name, Slug: req.Slug}
+	tag.CreatedBy = uid
+
 	if err := h.tagSvc.Create(tag); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -56,7 +59,11 @@ func (h *TagHandler) Update(c *gin.Context) {
 		return
 	}
 
-	tag := &model.Tag{ID: uint(id), Name: req.Name, Slug: req.Slug}
+	uid := getUserID(c)
+	tag := &model.Tag{Name: req.Name, Slug: req.Slug}
+	tag.ID = uint(id)
+	tag.UpdatedBy = uid
+
 	if err := h.tagSvc.Update(tag); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,7 +73,8 @@ func (h *TagHandler) Update(c *gin.Context) {
 
 func (h *TagHandler) Delete(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err := h.tagSvc.Delete(uint(id)); err != nil {
+	uid := getUserID(c)
+	if err := h.tagSvc.Delete(uint(id), uid); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
