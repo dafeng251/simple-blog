@@ -130,5 +130,5 @@ func (s *PostService) Delete(id uint, deletedBy uint) error {
 		s.rdb.Del(ctx, fmt.Sprintf("post:slug:%s", post.Slug))
 	}
 	return s.db.Model(&model.Post{}).Where("id = ?", id).
-		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
+		Updates(map[string]interface{}{"deleted_by": deletedBy, "deleted_at": gorm.Expr("NOW()")}).Error
 }

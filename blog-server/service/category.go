@@ -36,5 +36,5 @@ func (s *CategoryService) Update(cat *model.Category) error {
 
 func (s *CategoryService) Delete(id uint, deletedBy uint) error {
 	return s.db.Model(&model.Category{}).Where("id = ?", id).
-		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
+		Updates(map[string]interface{}{"deleted_by": deletedBy, "deleted_at": gorm.Expr("NOW()")}).Error
 }

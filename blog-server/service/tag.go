@@ -36,5 +36,5 @@ func (s *TagService) Update(tag *model.Tag) error {
 
 func (s *TagService) Delete(id uint, deletedBy uint) error {
 	return s.db.Model(&model.Tag{}).Where("id = ?", id).
-		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
+		Updates(map[string]interface{}{"deleted_by": deletedBy, "deleted_at": gorm.Expr("NOW()")}).Error
 }

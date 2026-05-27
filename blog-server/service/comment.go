@@ -50,5 +50,5 @@ func (s *CommentService) UpdateStatus(id uint, status string, updatedBy uint) er
 
 func (s *CommentService) Delete(id uint, deletedBy uint) error {
 	return s.db.Model(&model.Comment{}).Where("id = ?", id).
-		Update("deleted_by", deletedBy).Update("deleted_at", gorm.Expr("NOW()")).Error
+		Updates(map[string]interface{}{"deleted_by": deletedBy, "deleted_at": gorm.Expr("NOW()")}).Error
 }
