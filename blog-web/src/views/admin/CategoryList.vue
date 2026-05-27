@@ -37,6 +37,7 @@
         <el-table-column v-if="show('deleted_at')" label="删除时间" width="140">
           <template #default="{ row }">{{ row.deleted_at ? formatDate(row.deleted_at) : '-' }}</template>
         </el-table-column>
+        <el-table-column v-if="show('deleted_by')" prop="deleted_by" label="删除人" width="80" />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="showDialog(row)"><el-icon><Edit /></el-icon> 编辑</el-button>
@@ -88,8 +89,9 @@ const allColumns = [
   { prop: 'updated_at', label: '更新时间' },
   { prop: 'updated_by', label: '更新人' },
   { prop: 'deleted_at', label: '删除时间' },
+  { prop: 'deleted_by', label: '删除人' },
 ]
-const defaultVisible = ['name', 'slug', 'description', 'created_at']
+const defaultVisible = allColumns.map(c => c.prop)
 const visibleColumns = ref<string[]>(JSON.parse(localStorage.getItem('category_columns') || 'null') || defaultVisible)
 
 function show(prop: string) {
