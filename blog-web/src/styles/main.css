@@ -18,3 +18,8 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* Icon and text vertical alignment */
+.el-icon {
+  vertical-align: middle;
+}
