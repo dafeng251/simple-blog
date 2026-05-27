@@ -12,6 +12,10 @@
               {{ col.label }}
             </el-checkbox>
           </el-checkbox-group>
+          <div class="column-actions">
+            <el-button size="small" @click="selectAll">{{ allSelected ? '取消全选' : '全选' }}</el-button>
+            <el-button size="small" @click="resetColumns">重置</el-button>
+          </div>
         </el-popover>
       </div>
       <el-table :data="comments" v-loading="loading">
@@ -54,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Check, Close, Delete, Setting } from '@element-plus/icons-vue'
 import { getAdminComments, updateCommentStatus, deleteComment } from '../../api/comment'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -87,6 +91,19 @@ function show(prop: string) {
 }
 function saveColumns() {
   localStorage.setItem('comment_columns', JSON.stringify(visibleColumns.value))
+}
+const allSelected = computed(() => visibleColumns.value.length === allColumns.length)
+function selectAll() {
+  if (allSelected.value) {
+    visibleColumns.value = []
+  } else {
+    visibleColumns.value = allColumns.map(c => c.prop)
+  }
+  saveColumns()
+}
+function resetColumns() {
+  visibleColumns.value = [...defaultVisible]
+  saveColumns()
 }
 
 async function fetchComments() {
@@ -147,5 +164,10 @@ onMounted(fetchComments)
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+.column-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 </style>

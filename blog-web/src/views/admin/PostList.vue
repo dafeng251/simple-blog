@@ -13,6 +13,10 @@
                 {{ col.label }}
               </el-checkbox>
             </el-checkbox-group>
+            <div class="column-actions">
+              <el-button size="small" @click="selectAll">{{ allSelected ? '取消全选' : '全选' }}</el-button>
+              <el-button size="small" @click="resetColumns">重置</el-button>
+            </div>
           </el-popover>
           <el-button type="primary" @click="$router.push('/admin/posts/edit')">
             <el-icon><Plus /></el-icon> 新建文章
@@ -70,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Plus, Edit, Delete, Setting } from '@element-plus/icons-vue'
 import { getAdminPosts, deletePost } from '../../api/post'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -105,6 +109,19 @@ function show(prop: string) {
 }
 function saveColumns() {
   localStorage.setItem('post_columns', JSON.stringify(visibleColumns.value))
+}
+const allSelected = computed(() => visibleColumns.value.length === allColumns.length)
+function selectAll() {
+  if (allSelected.value) {
+    visibleColumns.value = []
+  } else {
+    visibleColumns.value = allColumns.map(c => c.prop)
+  }
+  saveColumns()
+}
+function resetColumns() {
+  visibleColumns.value = [...defaultVisible]
+  saveColumns()
 }
 
 async function fetchPosts() {
@@ -150,6 +167,11 @@ onMounted(fetchPosts)
 .page-actions {
   display: flex;
   gap: 10px;
+}
+.column-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 .pagination-wrapper {
   margin-top: 20px;
