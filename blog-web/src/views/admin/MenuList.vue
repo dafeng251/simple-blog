@@ -71,6 +71,9 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number v-model="form.sort_order" :min="0" />
+        </el-form-item>
         <el-form-item label="路径">
           <el-input v-model="form.path" placeholder="如：/ 或 /about" />
         </el-form-item>
@@ -144,7 +147,7 @@ const menus = ref<MenuItem[]>([])
 const loading = ref(true)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
-const form = ref({ name: '', path: '', icon: '', is_visible: true })
+const form = ref({ name: '', path: '', icon: '', sort_order: 0, is_visible: true })
 
 const categories = ref<any[]>([])
 const articles = ref<any[]>([])
@@ -164,10 +167,10 @@ async function fetchMenus() {
 function showDialog(row?: MenuItem) {
   if (row) {
     editingId.value = row.id
-    form.value = { name: row.name, path: row.path, icon: row.icon || '', is_visible: row.is_visible }
+    form.value = { name: row.name, path: row.path, icon: row.icon || '', sort_order: row.sort_order, is_visible: row.is_visible }
   } else {
     editingId.value = null
-    form.value = { name: '', path: '', icon: '', is_visible: true }
+    form.value = { name: '', path: '', icon: '', sort_order: 0, is_visible: true }
   }
   dialogVisible.value = true
 }
