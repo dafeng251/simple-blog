@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getSiteConfig } from '../api/config'
+import { getPublicMenus } from '../api/menu'
 
 export const useAppStore = defineStore('app', () => {
   const siteTitle = ref('极简博客')
@@ -11,6 +12,7 @@ export const useAppStore = defineStore('app', () => {
   const icpNumber = ref('')
   const copyright = ref('')
   const socialLinks = ref<{ label: string; url: string }[]>([])
+  const menuItems = ref<{ id: number; name: string; path: string; icon: string }[]>([])
   const sidebarCollapsed = ref(false)
 
   function toggleSidebar() {
@@ -44,9 +46,18 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  async function loadMenus() {
+    try {
+      const res: any = await getPublicMenus()
+      menuItems.value = res.data || []
+    } catch {
+      menuItems.value = []
+    }
+  }
+
   return {
     siteTitle, siteSubtitle, siteDescription, siteLogo, siteFavicon,
-    icpNumber, copyright, socialLinks, sidebarCollapsed,
-    toggleSidebar, loadConfig,
+    icpNumber, copyright, socialLinks, menuItems, sidebarCollapsed,
+    toggleSidebar, loadConfig, loadMenus,
   }
 })
