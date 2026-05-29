@@ -64,16 +64,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Plus, Edit, Delete, Setting } from '@element-plus/icons-vue'
 import { getTags, createTag, updateTag, deleteTag } from '../../api/tag'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { slugify } from 'transliteration'
 
 const tags = ref<any[]>([])
 const loading = ref(true)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({ name: '', slug: '' })
+
+watch(() => form.value.name, (val) => {
+  if (!form.value.slug) {
+    form.value.slug = slugify(val)
+  }
+})
 
 const allColumns = [
   { prop: 'id', label: 'ID' },
@@ -131,6 +138,9 @@ function showDialog(row?: any) {
 }
 
 async function handleSave() {
+  if (!form.value.slug) {
+    form.value.slug = slugify(form.value.name)
+  }
   try {
     if (editingId.value) {
       await updateTag(editingId.value, form.value)
@@ -140,7 +150,8 @@ async function handleSave() {
     ElMessage.success('保存成功')
     dialogVisible.value = false
     fetchTags()
-  } catch {
+  } catch (e) {
+    console.error(e)
     ElMessage.error('保存失败')
   }
 }

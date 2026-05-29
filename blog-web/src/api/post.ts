@@ -8,6 +8,10 @@ export function getPostBySlug(slug: string) {
   return request.get(`/posts/${slug}`)
 }
 
+export function getPostById(id: number) {
+  return request.get(`/admin/posts/${id}`)
+}
+
 export function getAdminPosts(params?: { page?: number; page_size?: number }) {
   return request.get('/admin/posts', { params })
 }
