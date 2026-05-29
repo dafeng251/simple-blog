@@ -16,11 +16,12 @@ request.interceptors.request.use((config) => {
 request.interceptors.response.use(
   (res) => res.data,
   (err) => {
+    const msg = err.response?.data?.message
     if (err.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/admin/login'
     }
-    return Promise.reject(err)
+    return Promise.reject(new Error(msg || '请求失败'))
   }
 )
 

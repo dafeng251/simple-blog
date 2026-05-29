@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"blog-server/model"
 	"blog-server/service"
 
@@ -21,22 +18,22 @@ func NewCategoryHandler(categorySvc *service.CategoryService) *CategoryHandler {
 func (h *CategoryHandler) List(c *gin.Context) {
 	categories, err := h.categorySvc.List()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": categories})
+	Success(c, categories)
 }
 
 type CategoryRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Slug        string `json:"slug" binding:"required"`
-	Description string `json:"description"`
+	Name        string `json:"name" binding:"required,max=50"`
+	Slug        string `json:"slug" binding:"required,max=50"`
+	Description string `json:"description" binding:"max=200"`
 }
 
 func (h *CategoryHandler) Create(c *gin.Context) {
 	var req CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
@@ -49,18 +46,21 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	cat.CreatedBy = uid
 
 	if err := h.categorySvc.Create(cat); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"data": cat})
+	Created(c, cat)
 }
 
 func (h *CategoryHandler) Update(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
 
 	var req CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
@@ -70,22 +70,25 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		Slug:        req.Slug,
 		Description: req.Description,
 	}
-	cat.ID = uint(id)
+	cat.ID = id
 	cat.UpdatedBy = uid
 
 	if err := h.categorySvc.Update(cat); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": cat})
+	Success(c, cat)
 }
 
 func (h *CategoryHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	uid := getUserID(c)
-	if err := h.categorySvc.Delete(uint(id), uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	uid := getUserID(c)
+	if err := h.categorySvc.Delete(id, uid); err != nil {
+		ServerError(c)
+		return
+	}
+	OK(c, "删除成功")
 }

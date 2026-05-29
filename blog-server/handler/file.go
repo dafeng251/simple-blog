@@ -1,52 +1,53 @@
 package handler
 
 import (
-	"net/http"
-	"os"
-	"strconv"
-
 	"blog-server/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type FileHandler struct {
-	fileSvc *service.FileService
-	uploadDir string
+	fileSvc        *service.FileService
+	storageFactory StorageFactory
 }
 
-func NewFileHandler(fileSvc *service.FileService, uploadDir string) *FileHandler {
-	return &FileHandler{fileSvc: fileSvc, uploadDir: uploadDir}
+func NewFileHandler(fileSvc *service.FileService, factory StorageFactory) *FileHandler {
+	return &FileHandler{fileSvc: fileSvc, storageFactory: factory}
 }
 
 func (h *FileHandler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	page := defaultQueryInt(c, "page", 1)
+	pageSize := defaultQueryInt(c, "page_size", 10)
 
 	files, total, err := h.fileSvc.List(page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": files, "total": total})
+	SuccessWithPage(c, files, total, page, pageSize)
 }
 
 func (h *FileHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
 	uid := getUserID(c)
 
-	file, err := h.fileSvc.GetByID(uint(id))
+	file, err := h.fileSvc.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		NotFound(c, "文件不存在")
 		return
 	}
 
-	// Delete physical file
-	os.Remove(file.Path)
+	// Delete physical file from storage
+	if storage, err := h.storageFactory(); err == nil {
+		storage.Delete(file.Path)
+	}
 
-	if err := h.fileSvc.Delete(uint(id), uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.fileSvc.Delete(id, uid); err != nil {
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	OK(c, "删除成功")
 }

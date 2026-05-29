@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"net/http"
 	"path/filepath"
 	"strings"
 
@@ -13,46 +12,58 @@ import (
 	"github.com/google/uuid"
 )
 
+type StorageFactory func() (service.Storage, error)
+
 type UploadHandler struct {
-	cfg     *config.Config
-	fileSvc *service.FileService
+	cfg            *config.Config
+	fileSvc        *service.FileService
+	storageFactory StorageFactory
 }
 
-func NewUploadHandler(cfg *config.Config, fileSvc *service.FileService) *UploadHandler {
-	return &UploadHandler{cfg: cfg, fileSvc: fileSvc}
+func NewUploadHandler(cfg *config.Config, fileSvc *service.FileService, factory StorageFactory) *UploadHandler {
+	return &UploadHandler{cfg: cfg, fileSvc: fileSvc, storageFactory: factory}
 }
 
 func (h *UploadHandler) Upload(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		BadRequest(c, "请选择文件")
 		return
 	}
 
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true}
 	if !allowed[ext] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file type not allowed"})
+		BadRequest(c, "不支持的文件类型")
+		return
+	}
+
+	if file.Size > 10*1024*1024 {
+		BadRequest(c, "文件大小不能超过10MB")
 		return
 	}
 
 	filename := uuid.New().String() + ext
-	dst := filepath.Join(h.cfg.UploadDir, filename)
 
-	if err := c.SaveUploadedFile(file, dst); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	storage, err := h.storageFactory()
+	if err != nil {
+		ServerError(c)
 		return
 	}
 
-	url := "/uploads/" + filename
+	url, path, err := storage.Save(file, filename)
+	if err != nil {
+		ServerError(c)
+		return
+	}
+
 	uid := getUserID(c)
 
-	// Save file record to DB
 	fileRecord := &model.File{
 		OriginalName: file.Filename,
 		FileName:     filename,
 		URL:          url,
-		Path:         dst,
+		Path:         path,
 		Size:         file.Size,
 		Ext:          ext,
 		ContentType:  file.Header.Get("Content-Type"),
@@ -60,5 +71,5 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 	fileRecord.CreatedBy = uid
 	h.fileSvc.Create(fileRecord)
 
-	c.JSON(http.StatusOK, gin.H{"url": url})
+	Success(c, gin.H{"url": url})
 }

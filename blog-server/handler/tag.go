@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"blog-server/model"
 	"blog-server/service"
 
@@ -21,21 +18,21 @@ func NewTagHandler(tagSvc *service.TagService) *TagHandler {
 func (h *TagHandler) List(c *gin.Context) {
 	tags, err := h.tagSvc.List()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": tags})
+	Success(c, tags)
 }
 
 type TagRequest struct {
-	Name string `json:"name" binding:"required"`
-	Slug string `json:"slug" binding:"required"`
+	Name string `json:"name" binding:"required,max=50"`
+	Slug string `json:"slug" binding:"required,max=50"`
 }
 
 func (h *TagHandler) Create(c *gin.Context) {
 	var req TagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
@@ -44,39 +41,45 @@ func (h *TagHandler) Create(c *gin.Context) {
 	tag.CreatedBy = uid
 
 	if err := h.tagSvc.Create(tag); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"data": tag})
+	Created(c, tag)
 }
 
 func (h *TagHandler) Update(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
 
 	var req TagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
 	uid := getUserID(c)
 	tag := &model.Tag{Name: req.Name, Slug: req.Slug}
-	tag.ID = uint(id)
+	tag.ID = id
 	tag.UpdatedBy = uid
 
 	if err := h.tagSvc.Update(tag); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": tag})
+	Success(c, tag)
 }
 
 func (h *TagHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	uid := getUserID(c)
-	if err := h.tagSvc.Delete(uint(id), uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	uid := getUserID(c)
+	if err := h.tagSvc.Delete(id, uid); err != nil {
+		ServerError(c)
+		return
+	}
+	OK(c, "删除成功")
 }

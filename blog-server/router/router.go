@@ -18,6 +18,7 @@ func Setup(
 	configH *handler.ConfigHandler,
 	uploadH *handler.UploadHandler,
 	fileH *handler.FileHandler,
+	menuH *handler.MenuHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -36,6 +37,7 @@ func Setup(
 	api.GET("/tags", tagH.List)
 	api.POST("/comments", commentH.Create)
 	api.GET("/config", configH.GetAll)
+	api.GET("/menus", menuH.PublicList)
 
 	// Auth routes
 	admin := api.Group("/admin")
@@ -46,6 +48,7 @@ func Setup(
 	auth.Use(middleware.JWTAuth(cfg.JWTSecret))
 	{
 		auth.GET("/posts", postH.AdminList)
+		auth.GET("/posts/:id", postH.GetByID)
 		auth.POST("/posts", postH.Create)
 		auth.PUT("/posts/:id", postH.Update)
 		auth.DELETE("/posts/:id", postH.Delete)
@@ -66,12 +69,18 @@ func Setup(
 
 		auth.GET("/config", configH.GetAll)
 		auth.PUT("/config", configH.Update)
-			auth.PUT("/config/batch", configH.BatchUpdate)
+		auth.PUT("/config/batch", configH.BatchUpdate)
 
 		auth.POST("/upload", uploadH.Upload)
 
 		auth.GET("/files", fileH.List)
 		auth.DELETE("/files/:id", fileH.Delete)
+
+		auth.GET("/menus", menuH.List)
+		auth.POST("/menus", menuH.Create)
+		auth.PUT("/menus/:id", menuH.Update)
+		auth.DELETE("/menus/:id", menuH.Delete)
+		auth.PUT("/menus/reorder", menuH.Reorder)
 	}
 
 	return r

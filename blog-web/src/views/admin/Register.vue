@@ -53,11 +53,11 @@ async function handleRegister() {
   loading.value = true
   try {
     const res: any = await register(form.value.username, form.value.password)
-    localStorage.setItem('token', res.token)
+    localStorage.setItem('token', res.data.token)
     ElMessage.success('注册成功')
     router.push('/admin')
   } catch (err: any) {
-    ElMessage.error(err.response?.data?.error || '注册失败')
+    ElMessage.error(err.message || '注册失败')
   } finally {
     loading.value = false
   }

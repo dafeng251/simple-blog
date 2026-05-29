@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
 	"time"
 
 	"blog-server/model"
@@ -20,57 +18,70 @@ func NewPostHandler(postSvc *service.PostService) *PostHandler {
 }
 
 func (h *PostHandler) List(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
-	categoryID, _ := strconv.ParseUint(c.Query("category_id"), 10, 32)
-	tagID, _ := strconv.ParseUint(c.Query("tag_id"), 10, 32)
+	page := defaultQueryInt(c, "page", 1)
+	pageSize := defaultQueryInt(c, "page_size", 10)
+	categoryID, _ := parseUintOptional(c.Query("category_id"))
+	tagID, _ := parseUintOptional(c.Query("tag_id"))
 
 	posts, total, err := h.postSvc.List(service.ListPostsParams{
 		Page:       page,
 		PageSize:   pageSize,
-		CategoryID: uint(categoryID),
-		TagID:      uint(tagID),
+		CategoryID: categoryID,
+		TagID:      tagID,
 		Status:     "published",
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": posts, "total": total, "page": page, "page_size": pageSize})
+	SuccessWithPage(c, posts, total, page, pageSize)
 }
 
 func (h *PostHandler) GetBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	post, err := h.postSvc.GetBySlug(slug)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+		NotFound(c, "文章不存在")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": post})
+	Success(c, post)
+}
+
+func (h *PostHandler) GetByID(c *gin.Context) {
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
+	post, err := h.postSvc.GetByID(id)
+	if err != nil {
+		NotFound(c, "文章不存在")
+		return
+	}
+	Success(c, post)
 }
 
 func (h *PostHandler) AdminList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	page := defaultQueryInt(c, "page", 1)
+	pageSize := defaultQueryInt(c, "page_size", 10)
 
 	posts, total, err := h.postSvc.List(service.ListPostsParams{
 		Page:     page,
 		PageSize: pageSize,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": posts, "total": total, "page": page, "page_size": pageSize})
+	SuccessWithPage(c, posts, total, page, pageSize)
 }
 
 type CreatePostRequest struct {
-	Title      string `json:"title" binding:"required"`
-	Slug       string `json:"slug" binding:"required"`
+	Title      string `json:"title" binding:"required,max=200"`
+	Slug       string `json:"slug" binding:"required,max=200"`
 	Content    string `json:"content"`
-	Summary    string `json:"summary"`
-	CoverImage string `json:"cover_image"`
-	Status     string `json:"status"`
+	Summary    string `json:"summary" binding:"max=500"`
+	CoverImage string `json:"cover_image" binding:"max=500"`
+	Status     string `json:"status" binding:"omitempty,oneof=draft published"`
 	CategoryID uint   `json:"category_id"`
 	TagIDs     []uint `json:"tag_ids"`
 }
@@ -78,7 +89,7 @@ type CreatePostRequest struct {
 func (h *PostHandler) Create(c *gin.Context) {
 	var req CreatePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
@@ -106,7 +117,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.postSvc.Create(post); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
 
@@ -114,22 +125,25 @@ func (h *PostHandler) Create(c *gin.Context) {
 		h.postSvc.UpdateTags(post, req.TagIDs)
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": post})
+	Created(c, post)
 }
 
 func (h *PostHandler) Update(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
 
 	var req CreatePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
 	uid := getUserID(c)
 
 	post := &model.Post{}
-	post.ID = uint(id)
+	post.ID = id
 	post.Title = req.Title
 	post.Slug = req.Slug
 	post.Content = req.Content
@@ -147,25 +161,28 @@ func (h *PostHandler) Update(c *gin.Context) {
 	}
 
 	if err := h.postSvc.Update(post); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
 
 	if req.TagIDs != nil {
 		p := &model.Post{}
-		p.ID = uint(id)
+		p.ID = id
 		h.postSvc.UpdateTags(p, req.TagIDs)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": post})
+	Success(c, post)
 }
 
 func (h *PostHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	uid := getUserID(c)
-	if err := h.postSvc.Delete(uint(id), uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	uid := getUserID(c)
+	if err := h.postSvc.Delete(id, uid); err != nil {
+		ServerError(c)
+		return
+	}
+	OK(c, "删除成功")
 }

@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"blog-server/model"
 	"blog-server/service"
 
@@ -19,27 +16,30 @@ func NewCommentHandler(commentSvc *service.CommentService) *CommentHandler {
 }
 
 func (h *CommentHandler) ListByPost(c *gin.Context) {
-	postID, _ := strconv.ParseUint(c.Param("post_id"), 10, 32)
-	comments, err := h.commentSvc.ListByPostID(uint(postID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	postID, ok := parseUint(c, c.Param("post_id"))
+	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": comments})
+	comments, err := h.commentSvc.ListByPostID(postID)
+	if err != nil {
+		ServerError(c)
+		return
+	}
+	Success(c, comments)
 }
 
 type CreateCommentRequest struct {
 	PostID   uint   `json:"post_id" binding:"required"`
 	ParentID *uint  `json:"parent_id"`
-	Nickname string `json:"nickname" binding:"required"`
-	Email    string `json:"email"`
-	Content  string `json:"content" binding:"required"`
+	Nickname string `json:"nickname" binding:"required,max=50"`
+	Email    string `json:"email" binding:"max=100,email"`
+	Content  string `json:"content" binding:"required,max=2000"`
 }
 
 func (h *CommentHandler) Create(c *gin.Context) {
 	var req CreateCommentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
@@ -53,51 +53,57 @@ func (h *CommentHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.commentSvc.Create(comment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"data": comment})
+	Created(c, comment)
 }
 
 func (h *CommentHandler) AdminList(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	page := defaultQueryInt(c, "page", 1)
+	pageSize := defaultQueryInt(c, "page_size", 10)
 
 	comments, total, err := h.commentSvc.ListAll(page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": comments, "total": total, "page": page, "page_size": pageSize})
+	SuccessWithPage(c, comments, total, page, pageSize)
 }
 
 type UpdateCommentStatusRequest struct {
-	Status string `json:"status" binding:"required"`
+	Status string `json:"status" binding:"required,oneof=pending approved rejected"`
 }
 
 func (h *CommentHandler) UpdateStatus(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
+		return
+	}
 
 	var req UpdateCommentStatusRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BindError(c, err)
 		return
 	}
 
 	uid := getUserID(c)
-	if err := h.commentSvc.UpdateStatus(uint(id), req.Status, uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commentSvc.UpdateStatus(id, req.Status, uid); err != nil {
+		ServerError(c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "updated"})
+	OK(c, "更新成功")
 }
 
 func (h *CommentHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
-	uid := getUserID(c)
-	if err := h.commentSvc.Delete(uint(id), uid); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	id, ok := parseUint(c, c.Param("id"))
+	if !ok {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+	uid := getUserID(c)
+	if err := h.commentSvc.Delete(id, uid); err != nil {
+		ServerError(c)
+		return
+	}
+	OK(c, "删除成功")
 }
