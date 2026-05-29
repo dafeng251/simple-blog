@@ -24,7 +24,7 @@
         <el-table-column prop="name" label="名称" width="150" />
         <el-table-column label="图标" width="80">
           <template #default="{ row }">
-            <el-icon v-if="row.icon" :size="18"><component :is="iconMap[row.icon]" /></el-icon>
+            <el-icon v-if="row.icon && resolveIcon(row.icon)" :size="18"><component :is="resolveIcon(row.icon)" /></el-icon>
             <span v-else style="color: #ccc">—</span>
           </template>
         </el-table-column>
@@ -62,14 +62,10 @@
           <el-input v-model="form.name" placeholder="如：首页" />
         </el-form-item>
         <el-form-item label="图标">
-          <el-select v-model="form.icon" placeholder="选择图标（可选）" clearable filterable>
-            <el-option v-for="icon in iconOptions" :key="icon.name" :label="icon.label" :value="icon.name">
-              <div style="display: flex; align-items: center; gap: 8px">
-                <el-icon :size="16"><component :is="iconMap[icon.name]" /></el-icon>
-                <span>{{ icon.label }}</span>
-              </div>
-            </el-option>
-          </el-select>
+          <IconInput v-model="form.icon" placeholder="输入图标名称，如 HomeFilled" />
+          <div style="color: #999; font-size: 12px; margin-top: 4px">
+            参考：<a href="https://element-plus.org/en-US/component/icon.html" target="_blank" style="color: var(--el-color-primary)">Element Plus 图标列表</a>
+          </div>
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="form.sort_order" :min="0" />
@@ -91,41 +87,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import {
-  Plus, Edit, Delete, Top, Bottom,
-  HomeFilled, Document, Collection, PriceTag, ChatDotRound,
-  Link, Star, Setting, Menu, House, Notebook, Reading,
-  Picture, User, Location, Phone, Message, Promotion, Calendar,
-} from '@element-plus/icons-vue'
+import * as allIcons from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Top, Bottom } from '@element-plus/icons-vue'
+import IconInput from '../../components/IconInput.vue'
 
-const iconMap: Record<string, any> = {
-  HomeFilled, Document, Collection, PriceTag, ChatDotRound,
-  Link, Star, Setting, Menu, House, Notebook, Reading,
-  Edit, Picture, User, Location, Phone, Message, Promotion, Calendar,
+function resolveIcon(name: string) {
+  return (allIcons as Record<string, any>)[name] || null
 }
-
-const iconOptions = [
-  { name: 'HomeFilled', label: '首页' },
-  { name: 'Document', label: '文档' },
-  { name: 'Collection', label: '合集' },
-  { name: 'PriceTag', label: '标签' },
-  { name: 'ChatDotRound', label: '评论' },
-  { name: 'Link', label: '链接' },
-  { name: 'Star', label: '收藏' },
-  { name: 'Setting', label: '设置' },
-  { name: 'Menu', label: '菜单' },
-  { name: 'House', label: '房屋' },
-  { name: 'Notebook', label: '笔记' },
-  { name: 'Reading', label: '阅读' },
-  { name: 'Edit', label: '编辑' },
-  { name: 'Picture', label: '图片' },
-  { name: 'User', label: '用户' },
-  { name: 'Location', label: '位置' },
-  { name: 'Phone', label: '电话' },
-  { name: 'Message', label: '消息' },
-  { name: 'Promotion', label: '推广' },
-  { name: 'Calendar', label: '日历' },
-]
 import { getMenus, createMenu, updateMenu, deleteMenu, reorderMenus } from '../../api/menu'
 import { getCategories } from '../../api/category'
 import { getPosts } from '../../api/post'

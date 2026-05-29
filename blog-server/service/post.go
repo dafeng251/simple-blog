@@ -51,7 +51,7 @@ func (s *PostService) List(params ListPostsParams) ([]model.Post, int64, error) 
 		Preload("Category").
 		Preload("Tags").
 		Preload("Author").
-		Order("created_at ASC").
+		Order("created_at DESC").
 		Offset(offset).
 		Limit(params.PageSize).
 		Find(&posts).Error

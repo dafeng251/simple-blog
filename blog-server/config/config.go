@@ -20,7 +20,7 @@ func Load() *Config {
 		UploadDir: envOr("UPLOAD_DIR", "uploads"),
 		RedisAddr: envOr("REDIS_ADDR", "127.0.0.1:6379"),
 		RedisPwd:  envOr("REDIS_PWD", ""),
-		RedisDB:   envOr("REDIS_DB", "0"),
+		RedisDB:   envOr("REDIS_DB", "2"),
 	}
 }
 

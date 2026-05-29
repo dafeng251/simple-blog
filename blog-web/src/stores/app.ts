@@ -11,7 +11,7 @@ export const useAppStore = defineStore('app', () => {
   const siteFavicon = ref('')
   const icpNumber = ref('')
   const copyright = ref('')
-  const socialLinks = ref<{ label: string; url: string }[]>([])
+  const socialLinks = ref<{ label: string; url: string; icon?: string }[]>([])
   const menuItems = ref<{ id: number; name: string; path: string; icon: string }[]>([])
   const sidebarCollapsed = ref(false)
 

@@ -37,8 +37,9 @@ func main() {
 		&model.Post{},
 		&model.PostTag{},
 		&model.Comment{},
-		&model.SiteConfig{},model.SiteConfig{},
+		&model.SiteConfig{},
 		&model.File{},
+		&model.Menu{},
 	); err != nil {
 		log.Fatal("failed to migrate database:", err)
 	}
@@ -64,6 +65,7 @@ func main() {
 	commentSvc := service.NewCommentService(db)
 	configSvc := service.NewConfigService(db)
 	fileSvc := service.NewFileService(db)
+	menuSvc := service.NewMenuService(db)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
@@ -72,11 +74,21 @@ func main() {
 	tagH := handler.NewTagHandler(tagSvc)
 	commentH := handler.NewCommentHandler(commentSvc)
 	configH := handler.NewConfigHandler(configSvc)
-	fileH := handler.NewFileHandler(fileSvc, cfg.UploadDir)
-	uploadH := handler.NewUploadHandler(cfg, fileSvc)
+
+	storageFactory := func() (service.Storage, error) {
+		storageType, _ := configSvc.GetByKey("storage_type")
+		if storageType == "" {
+			storageType = "local"
+		}
+		return service.NewStorage(storageType, configSvc, cfg.UploadDir)
+	}
+
+	fileH := handler.NewFileHandler(fileSvc, storageFactory)
+	uploadH := handler.NewUploadHandler(cfg, fileSvc, storageFactory)
+	menuH := handler.NewMenuHandler(menuSvc)
 
 	// Router
-	r := router.Setup(cfg, authH, postH, categoryH, tagH, commentH, configH, uploadH, fileH)
+	r := router.Setup(cfg, authH, postH, categoryH, tagH, commentH, configH, uploadH, fileH, menuH)
 
 	log.Printf("server starting on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

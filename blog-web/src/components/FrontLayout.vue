@@ -10,7 +10,7 @@
         <router-link v-for="item in store.menuItems" :key="item.id" :to="item.path">
           <el-icon v-if="item.icon"><component :is="iconMap[item.icon]" /></el-icon>{{ item.name }}
         </router-link>
-        <router-link to="/admin"><el-icon><Setting /></el-icon> 管理</router-link>
+        <router-link to="/admin"><el-icon><Setting /></el-icon> 后台管理</router-link>
       </nav>
     </header>
     <main class="front-main">
@@ -39,6 +39,7 @@
           <h4>社交媒体</h4>
           <div class="social-links">
             <a v-for="link in store.socialLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer">
+              <el-icon v-if="link.icon && resolveIcon(link.icon)"><component :is="resolveIcon(link.icon)" /></el-icon>
               {{ link.label }}
             </a>
           </div>
@@ -55,18 +56,19 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import {
-  Edit, Setting, HomeFilled, Document, Collection, PriceTag,
-  ChatDotRound, Link, Star, Menu, House, Notebook, Reading,
-  Picture, User, Location, Phone, Message, Promotion, Calendar,
-} from '@element-plus/icons-vue'
+import * as allIcons from '@element-plus/icons-vue'
+import { Edit, Setting } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 
-const iconMap: Record<string, any> = {
-  HomeFilled, Document, Collection, PriceTag, ChatDotRound,
-  Link, Star, Setting, Menu, House, Notebook, Reading,
-  Edit, Picture, User, Location, Phone, Message, Promotion, Calendar,
+function resolveIcon(name: string) {
+  return (allIcons as Record<string, any>)[name] || null
 }
+
+const iconMap = new Proxy({} as Record<string, any>, {
+  get(_target, prop: string) {
+    return resolveIcon(prop)
+  },
+})
 
 const store = useAppStore()
 

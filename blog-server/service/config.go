@@ -22,7 +22,7 @@ func (s *ConfigService) GetAll() ([]model.SiteConfig, error) {
 
 func (s *ConfigService) GetByKey(key string) (string, error) {
 	var config model.SiteConfig
-	err := s.db.Where("key = ?", key).First(&config).Error
+	err := s.db.Where("config_key = ?", key).First(&config).Error
 	if err != nil {
 		return "", err
 	}
@@ -31,7 +31,7 @@ func (s *ConfigService) GetByKey(key string) (string, error) {
 
 func (s *ConfigService) Set(key, value string, updatedBy uint) error {
 	var config model.SiteConfig
-	result := s.db.Where("key = ?", key).First(&config)
+	result := s.db.Where("config_key = ?", key).First(&config)
 	if result.Error == gorm.ErrRecordNotFound {
 		config = model.SiteConfig{Key: key, Value: value}
 		config.CreatedBy = updatedBy

@@ -51,9 +51,18 @@
         </el-table-column>
         <el-table-column v-if="show('updated_by')" prop="updated_by" label="更新人" width="80" />
         <el-table-column v-if="show('deleted_by')" prop="deleted_by" label="删除人" width="80" />
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="170" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="danger" @click="handleDelete(row.id)"><el-icon><Delete /></el-icon> 删除</el-button>
+            <el-dropdown trigger="click" @command="(cmd: string) => handleCopy(row, cmd)">
+              <el-button size="small" type="primary"><el-icon><Link /></el-icon> 引用</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="url">复制链接</el-dropdown-item>
+                  <el-dropdown-item command="markdown">复制 Markdown 图片</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)" style="margin-left: 8px"><el-icon><Delete /></el-icon> 删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -66,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Upload, Delete, Setting } from '@element-plus/icons-vue'
+import { Upload, Delete, Setting, Link } from '@element-plus/icons-vue'
 import { getAdminFiles, deleteFile } from '../../api/file'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '../../components/Pagination.vue'
@@ -140,6 +149,20 @@ async function handleDelete(id: number) {
   await deleteFile(id)
   ElMessage.success('已删除')
   fetchFiles()
+}
+
+function handleCopy(row: any, command: string) {
+  let text = ''
+  if (command === 'markdown') {
+    text = `![${row.original_name}](${row.url})`
+  } else {
+    text = row.url
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    ElMessage.success('已复制')
+  }).catch(() => {
+    ElMessage.error('复制失败')
+  })
 }
 
 function handlePageChange(p: number) {
