@@ -57,7 +57,7 @@
           <template #header>
             <div class="card-header">
               <span><el-icon><Document /></el-icon> 最近文章</span>
-              <el-button type="text" @click="$router.push('/admin/posts')">查看全部</el-button>
+              <el-button link @click="$router.push('/admin/posts')">查看全部</el-button>
             </div>
           </template>
           <el-table :data="recentPosts" size="small" :show-header="false">
@@ -80,7 +80,7 @@
           <template #header>
             <div class="card-header">
               <span><el-icon><ChatDotRound /></el-icon> 最近评论</span>
-              <el-button type="text" @click="$router.push('/admin/comments')">查看全部</el-button>
+              <el-button link @click="$router.push('/admin/comments')">查看全部</el-button>
             </div>
           </template>
           <div v-for="comment in recentComments" :key="comment.id" class="comment-item">

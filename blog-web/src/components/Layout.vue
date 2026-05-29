@@ -27,6 +27,10 @@
           <el-icon><Setting /></el-icon>
           <span>站点配置</span>
         </el-menu-item>
+        <el-menu-item index="/admin/menus">
+          <el-icon><MenuIcon /></el-icon>
+          <span>菜单管理</span>
+        </el-menu-item>
         <el-menu-item index="/admin/files">
           <el-icon><Folder /></el-icon>
           <span>文件管理</span>
@@ -37,7 +41,7 @@
       <el-header>
         <div class="header-right">
           <router-link to="/"><el-icon><View /></el-icon> 查看博客</router-link>
-          <el-button type="text" @click="handleLogout"><el-icon><SwitchButton /></el-icon> 退出登录</el-button>
+          <el-button link @click="handleLogout"><el-icon><SwitchButton /></el-icon> 退出登录</el-button>
         </div>
       </el-header>
       <el-main>
@@ -51,7 +55,7 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { DataBoard, Document, FolderOpened, CollectionTag, ChatDotRound, Setting, View, SwitchButton, Folder } from '@element-plus/icons-vue'
+import { DataBoard, Document, FolderOpened, CollectionTag, ChatDotRound, Setting, View, SwitchButton, Folder, Menu as MenuIcon } from '@element-plus/icons-vue'
 import { useAppStore } from '../stores/app'
 
 const route = useRoute()
